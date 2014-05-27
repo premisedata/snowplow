@@ -1,0 +1,31 @@
+{
+	"$schema": "http://json-schema.org/schema#",
+	"description": "Schema for mobile contexts",
+	"self": {
+		"vendor": "com.snowplowanalytics.snowplow",
+		"name": "mobile_context",
+		"format": "jsonschema",
+		"version": "1-0-0"
+	},
+
+	"type": "object",
+	"properties": {
+		"osType": {
+			"type": "string"
+		},
+		"osVersion": {
+			"type": "number"
+		},
+		"deviceVendor": {
+			"type": "string"
+		},
+		"deviceModel": {
+			"type": "string"
+		},
+		"carrier": {
+			"type": "string"
+		}
+	},
+	"required": ["osType", "osVersion", "deviceVendor", "deviceModel"],
+	"additionalProperties": false
+}
