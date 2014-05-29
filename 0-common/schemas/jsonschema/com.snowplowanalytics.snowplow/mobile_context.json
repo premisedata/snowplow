@@ -24,6 +24,12 @@
 		},
 		"carrier": {
 			"type": "string"
+		},
+		"openIdfa": {
+			"type": "string"
+		},
+		"appleIdfa": {
+			"type": "string"
 		}
 	},
 	"required": ["osType", "osVersion", "deviceVendor", "deviceModel"],
