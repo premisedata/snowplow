@@ -43,9 +43,29 @@ module SnowPlow
           puts "  #{f}"
         }
 
-        queries = event_files.map { |f|
-            "COPY #{target[:table]} FROM '#{f}' WITH CSV ESCAPE E'#{ESCAPE_CHAR}' QUOTE E'#{QUOTE_CHAR}' DELIMITER '#{EVENT_FIELD_SEPARATOR}' NULL '#{NULL_STRING}';"
-        }
+        queries = event_files.each_with_index.map { |f,i| """
+
+          CREATE TEMP TABLE tmp_for_dedupe_#{i}
+            ON COMMIT DROP
+            AS SELECT * FROM #{target[:table]} WITH NO DATA;
+
+          COPY tmp_for_dedupe_#{i}
+            FROM '#{f}'
+            WITH CSV ESCAPE E'#{ESCAPE_CHAR}'
+            QUOTE E'#{QUOTE_CHAR}'
+            DELIMITER '#{EVENT_FIELD_SEPARATOR}'
+            NULL '#{NULL_STRING}';
+
+          DELETE FROM tmp_for_dedupe_#{i} as tmp
+            USING #{target[:table]} as target
+            WHERE tmp.event_id = target.event_id;
+
+          INSERT INTO #{target[:table]}
+            SELECT DISTINCT ON (event_id) *
+            FROM tmp_for_dedupe_#{i}
+            ORDER BY event_id, collector_tstamp ASC;
+
+        """}
         
         status = execute_transaction(target, queries)
         unless status == []
