@@ -115,6 +115,7 @@ module SnowPlow
 
         status = []
         queries.each do |q|
+          puts "Executing query:\n#{q}"
           begin
             conn.exec("#{q}")
           rescue PG::Error => err
