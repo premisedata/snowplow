@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+
+'''
+Usage:
+  run list
+  run describe <stream>
+  run download <stream> <output-dir>
+'''
+
+import sys, os.path, json, base64
+from docopt import docopt
+
+from premise.aws import aws
+from premise.shell import ensure_dir
+
+opts = docopt(__doc__)
+
+# For debugging
+def puts(x):
+    print x
+    return x
+
+if opts['list']:
+    for x in aws.kinesis.list_streams().stream_names:
+        print x
+
+elif opts['describe']:
+    stream = opts['<stream>']
+    print json.dumps(indent=2, obj =
+        aws.kinesis.describe_stream(stream_name = stream).stream_description.shards
+    )
+
+elif opts['download']:
+    stream     = opts['<stream>']
+    output_dir = opts['<output-dir>']
+    ensure_dir(output_dir)
+
+    for shard in aws.kinesis.describe_stream(stream_name = stream).stream_description.shards:
+        max_empty_results_in_a_row = 100 # TODO Empty-result gaps grow over time...
+        empty_results_in_a_row     = 0
+
+        shard_iterator = aws.kinesis.get_shard_iterator(
+            stream_name               = stream,
+            shard_id                  = shard.shard_id,
+            shard_iterator_type       = 'TRIM_HORIZON',
+            #shard_iterator_type       = 'LATEST',
+            #shard_iterator_type       = 'AT_SEQUENCE_NUMBER',
+            #shard_iterator_type       = 'AFTER_SEQUENCE_NUMBER',
+            #starting_sequence_number  = shard.sequence_number_range.starting_sequence_number,
+        ).shard_iterator
+
+        with open(os.path.join(output_dir, shard.shard_id), 'w') as shard_file:
+            print shard_file.name,; sys.stdout.flush()
+            while True:
+
+                rep = aws.kinesis.get_records(
+                    shard_iterator = shard_iterator,
+                    #limit          = 1000, # Default: 10MB worth
+                )
+
+                # Write out records (base64 tsv lines) until we hit the head of the stream (empty records)
+                print '+%s' % len(rep.records),; sys.stdout.flush()
+                shard_file.writelines(base64.b64decode(x.data) + '\n' for x in rep.records)
+                if not rep.records:
+                    empty_results_in_a_row += 1
+                    if empty_results_in_a_row > max_empty_results_in_a_row: # FIXME No way to tell when we're at the tip of the stream
+                        break
+                else:
+                    empty_results_in_a_row = 0
+
+                # NextShardIterator: "If set to null, the shard has been closed and the requested iterator will not
+                # return any more data" [http://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetRecords.html]
+                # FIXME Why are we randomly seeing no NextShardIterator key at all with shard_iterator_type:LATEST?
+                shard_iterator = rep.get('NextShardIterator')
+                if not shard_iterator:
+                    break
+
+            print

@@ -10,3 +10,6 @@
 [submodule "1-trackers/python-tracker"]
 	path = 1-trackers/python-tracker
 	url = https://github.com/snowplow/snowplow-python-tracker
+[submodule "4-storage/kinesis-snapshot/premise-commons"]
+	path = 4-storage/kinesis-snapshot/premise-commons
+	url = git@github.com:premisedata/commons.git
