@@ -57,7 +57,8 @@ abstract class AbstractSource(config: KinesisEnrichConfig) {
    * Fields in our CanonicalOutput which are discarded for legacy
    * Redshift space reasons
    */
-  private val DiscardedFields = Array("page_url", "page_referrer")
+  //private val DiscardedFields = Array("page_url", "page_referrer")
+  private val DiscardedFields = Array[String]() // Don't discard, for consistency with scala-hadoop-etl-0.5.0 (= scala-hadoop-enrich)
 
   // Initialize a kinesis provider to use with a Kinesis source or sink.
   protected val kinesisProvider = createKinesisProvider
