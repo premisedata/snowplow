@@ -27,6 +27,9 @@ import com.amazonaws.auth._
 import scalaz.{Sink => _, _}
 import Scalaz._
 
+// Logging
+import org.slf4j.LoggerFactory
+
 // Snowplow
 import sinks._
 import com.snowplowanalytics.maxmind.geoip.IpGeo
@@ -42,6 +45,8 @@ import common.enrichments.PrivacyEnrichments.AnonOctets
  * we support.
  */
 abstract class AbstractSource(config: KinesisEnrichConfig) {
+  private lazy val log = LoggerFactory.getLogger(getClass())
+  import log.{error, debug, info, trace}
   
   /**
    * Never-ending processing loop over source stream.
@@ -117,7 +122,9 @@ abstract class AbstractSource(config: KinesisEnrichConfig) {
               s.storeCanonicalOutput(ts, co.user_ipaddress)
             }
             Some(ts)
-          case Failure(f)  => None
+          case Failure(f)  =>
+            debug(s"Failed to enrichEvent: $f")
+            None
             // TODO: https://github.com/snowplow/snowplow/issues/463
         }
       }
