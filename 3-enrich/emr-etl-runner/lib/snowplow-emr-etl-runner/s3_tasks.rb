@@ -89,7 +89,7 @@ module Snowplow
           false
         else
           # Wait for s3 to eventually become consistent
-          s3_eventual_consistency_wait_time_s = 60
+          s3_eventual_consistency_wait_time_s = 5
           Logging::logger.debug "Waiting #{s3_eventual_consistency_wait_time_s}s to allow S3 to settle (eventual consistency)"
           sleep(s3_eventual_consistency_wait_time_s)
 
