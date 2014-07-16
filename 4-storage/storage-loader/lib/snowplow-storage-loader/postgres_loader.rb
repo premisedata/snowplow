@@ -22,7 +22,7 @@ module SnowPlow
 
       # Constants for the load process
       EVENT_FILES = "part-*"
-      EVENT_FIELD_SEPARATOR = "	"
+      EVENT_FIELD_SEPARATOR = "\t"
       NULL_STRING = ""
       QUOTE_CHAR = "\\x01"
       ESCAPE_CHAR = "\\x02"
