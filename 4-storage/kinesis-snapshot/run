@@ -4,7 +4,7 @@
 Usage:
   run list
   run describe <stream>
-  run download <stream> <output-dir>
+  run download <stream> <output-dir> [--stop-after-empty=5]
 '''
 
 import sys, os.path, json, base64
@@ -31,12 +31,13 @@ elif opts['describe']:
     )
 
 elif opts['download']:
-    stream     = opts['<stream>']
-    output_dir = opts['<output-dir>']
+    stream           = opts['<stream>']
+    output_dir       = opts['<output-dir>']
+    stop_after_empty = int(opts['--stop-after-empty'] or '5')
     ensure_dir(output_dir)
 
     for shard in aws.kinesis.describe_stream(stream_name = stream).stream_description.shards:
-        max_empty_results_in_a_row = 100 # TODO Empty-result gaps grow over time...
+        max_empty_results_in_a_row = stop_after_empty # FIXME Empty-result gaps grow over time, this approach is crap...
         empty_results_in_a_row     = 0
 
         shard_iterator = aws.kinesis.get_shard_iterator(
