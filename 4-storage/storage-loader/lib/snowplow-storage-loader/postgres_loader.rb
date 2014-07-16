@@ -21,7 +21,6 @@ module SnowPlow
     module PostgresLoader
 
       # Constants for the load process
-      EVENT_FILES = "part-*"
       EVENT_FIELD_SEPARATOR = "\t"
       NULL_STRING = ""
       QUOTE_CHAR = "\\x01"
@@ -37,7 +36,7 @@ module SnowPlow
       def load_events(events_dir, target, skip_steps, include_steps)
         puts "Loading Snowplow events into #{target[:name]} (PostgreSQL database)..."
 
-        event_files = get_event_files(events_dir)
+        event_files = get_event_files(events_dir, target)
         puts "Found #{event_files.size} event files"
         event_files.each { |f|
           puts "  #{f}"
@@ -157,9 +156,9 @@ module SnowPlow
       # +events_dir+:: the directory holding the event files to load 
       #
       # Returns the array of cold files
-      def get_event_files(events_dir)
+      def get_event_files(events_dir, target)
 
-        Dir[File.join(events_dir, '**', EVENT_FILES)].select { |f|
+        Dir[File.join(events_dir, '**', target[:event_files])].select { |f|
           File.file?(f) # In case of a dir ending in .tsv
         }
       end

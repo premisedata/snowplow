@@ -9,7 +9,8 @@
 :download:
   :folder: ADD HERE # Postgres-only config option. Where to store the downloaded files
 :targets:
-  - :name: "My PostgreSQL database"
+  - :event_files: "part-*"
+    :name: "My PostgreSQL database"
     :type: postgres
     :host: ADD HERE # Hostname of database server
     :database: ADD HERE # Name of database 
