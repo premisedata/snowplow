@@ -38,6 +38,11 @@ module SnowPlow
         puts "Loading Snowplow events into #{target[:name]} (PostgreSQL database)..."
 
         event_files = get_event_files(events_dir)
+        puts "Found #{event_files.size} event files"
+        event_files.each { |f|
+          puts "  #{f}"
+        }
+
         queries = event_files.map { |f|
             "COPY #{target[:table]} FROM '#{f}' WITH CSV ESCAPE E'#{ESCAPE_CHAR}' QUOTE E'#{QUOTE_CHAR}' DELIMITER '#{EVENT_FIELD_SEPARATOR}' NULL '#{NULL_STRING}';"
         }
